@@ -1,6 +1,10 @@
 import user from "../models/userModel.js";
 import JWT from 'jsonwebtoken';
 import ApiError from "../utils/ApiError.js";
+import upload from "../middlewares/multer.js";
+import {uploadImage, deleteImage} from "../middlewares/cloudinary.js";
+import fs from 'fs';
+
 // constructor(
 //     statusCode,
 //     message = 'Internal server error',
@@ -35,7 +39,7 @@ export const signup = async (req, res, next) => {
 
     await newUser.save();
 
-    const response = new ApiResponse(201, newUser, 'User created successfully');
+    const response = new ApiResponse(201, 'User created successfully');
     res.status(response.statusCode).json(response);
 };
 
@@ -46,13 +50,13 @@ export const signin = async (req, res, next) => {
         return next(new ApiError(400, 'All fields are required'))
     }
 
-    const existingUser = await user.findOne({email});
+    const existingUser = await user.findOne({email}).select('+password');
 
     if(!existingUser){
         return next(new ApiError(400, 'User does not exist'))
     }
 
-    const isMatch = await existingUser.matchPassword(password);
+    const isMatch = await existingUser.matchPassword(password, existingUser.password);
 
     if(!isMatch){
         return next(new ApiError(400, 'Invalid credentials'))
@@ -150,5 +154,36 @@ export const updateProfile = async (req, res, next) => {
     res.status(response.statusCode).json(response);
 };
 
-export const updateProfilePicture = async (req, res) => {};
+export const updateProfilePicture = async (req, res, next) => {
+    upload.single('profileImage')(req, res, async (err) => {
+        if(err){
+            return next(new ApiError(400, 'Image upload failed'))
+        }
+
+        console.log(req.user);
+        
+
+        if(req.user.profileImg.publicId){
+            await deleteImage(req.user.profileImg.publicId);
+        }
+
+        const imagePath = req.file.path;
+        
+        const cloudinaryResponse = await uploadImage(imagePath);
+        if(!cloudinaryResponse){
+            return next(new ApiError(400, 'Image upload failed'))
+        }
+
+        // Delete the image from the server
+        fs.unlinkSync(imagePath);        
+
+        req.user.profileImg.url = cloudinaryResponse.url;
+        req.user.profileImg.publicId = cloudinaryResponse.public_id;
+        await req.user.save();
+
+        const response = new ApiResponse(200, req.user, 'Profile picture updated successfully');
+
+        res.status(response.statusCode).json(response);
+    })
+};
 

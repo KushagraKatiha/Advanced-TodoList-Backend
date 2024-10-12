@@ -30,8 +30,15 @@ const userSchema = new mongoose.Schema({
     },
 
     profileImg:{
-        type: String,   // cloudinary url
-        default: null
+        url:{
+            type: String,
+            default: null
+        },
+
+        publicId:{
+            type: String,
+            default: null
+        }
     },
 
     forgetPasswordToken:{
@@ -65,8 +72,8 @@ userSchema.methods.generateForgetPasswrodToken = async function(){
 }
 
 // Create a method to compare the password entered by the user with the hashed password in the database
-userSchema.methods.matchPassword = async function(enteredPassword){
-    return await bcrypt.compare(enteredPassword, this.password)
+userSchema.methods.matchPassword = async function(enteredPassword, hashedPassword){
+    return await bcrypt.compare(enteredPassword, hashedPassword)
 }
 
 export default mongoose.model('User', userSchema)
