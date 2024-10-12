@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
-import JWT from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 
 const userSchema = new mongoose.Schema({
@@ -27,6 +26,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minLength: [6, 'Password must be at least 6 characters long'],
+        select: false
     },
 
     profileImg:{
