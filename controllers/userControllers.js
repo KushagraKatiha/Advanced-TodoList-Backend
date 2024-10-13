@@ -51,7 +51,7 @@ export const signin = async (req, res, next) => {
     }
 
     const existingUser = await user.findOne({email}).select('+password');
-
+    
     if(!existingUser){
         return next(new ApiError(400, 'User does not exist'))
     }
@@ -66,13 +66,18 @@ export const signin = async (req, res, next) => {
 
     const token = JWT.sign({id: existingUser._id}, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
-    });
+    });    
 
     res.cookie('token', token, {
         httpOnly: true,
-        secure: true
+        // secure: true
     })
 
+    existingUser.password = undefined;
+    console.log(token);
+    
+    
+    
     const response = new ApiResponse(200, existingUser, 'User signed in successfully');
 
     res.status(response.statusCode).json(response);
@@ -92,24 +97,6 @@ export const signout = async (req, res, next) => {
     res.status(response.statusCode).json(response);
 };
 
-export const isUserSignedIn = async (req, res, next) => {
-    if(!req.cookies.token){
-        return next(new ApiError(400, 'User not signed in'))
-    }
-
-    const token = req.cookies.token;
-
-    const decodedId = JWT.verify(token, process.env.JWT_SECRET);
-
-    const existingUser = await user.findById(decodedId.id);
-
-    if(!existingUser){
-        return next(new ApiError(400, 'User not found'))
-    }
-
-    const response = new ApiResponse(200, existingUser, 'User signed in');
-    res.status(response.statusCode).json(response);
-};
 
 export const changePassword = async (req, res, next) => {
     const {oldPassword, newPassword} = req.body;
@@ -155,12 +142,13 @@ export const updateProfile = async (req, res, next) => {
 };
 
 export const updateProfilePicture = async (req, res, next) => {
+    
     upload.single('profileImage')(req, res, async (err) => {
         if(err){
             return next(new ApiError(400, 'Image upload failed'))
         }
 
-        console.log(req.user);
+        console.log('req.user=>', req.user);
         
 
         if(req.user.profileImg.publicId){
@@ -186,4 +174,5 @@ export const updateProfilePicture = async (req, res, next) => {
         res.status(response.statusCode).json(response);
     })
 };
+
 

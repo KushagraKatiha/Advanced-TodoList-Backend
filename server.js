@@ -29,11 +29,15 @@ server.use(
 
 server.use(express.static("public"));
 
+
+
+server.use("/", userRouter);
 server.use(cookieParser());
 
 server.use((err, req, res, next) => {
   if (err instanceof ApiError) {
-    // Handle custom ApiError
+    console.log('error found !!');
+    
     return res.status(err.statusCode).json({
       statusCode: err.statusCode,
       message: err.message,
@@ -49,7 +53,5 @@ server.use((err, req, res, next) => {
     success: false,
   });
 });
-
-server.use("/", userRouter);
 
 export { server };
