@@ -3,6 +3,9 @@ import ApiError from '../utils/ApiError.js';
 import user from '../models/userModel.js';
 
 const isAuthenticated = async (req, _, next) => {
+
+    console.log('req.cookies=>', req.cookies);
+    
    
         // Correct cookie access
         const token = req.cookies?.token; 

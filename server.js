@@ -28,11 +28,11 @@ server.use(
 );
 
 server.use(express.static("public"));
+server.use(cookieParser());
 
 
 
 server.use("/", userRouter);
-server.use(cookieParser());
 
 server.use((err, req, res, next) => {
   if (err instanceof ApiError) {
