@@ -4,20 +4,7 @@ import ApiError from "../utils/ApiError.js";
 import upload from "../middlewares/multer.js";
 import {uploadImage, deleteImage} from "../middlewares/cloudinary.js";
 import fs from 'fs';
-
-// constructor(
-//     statusCode,
-//     message = 'Internal server error',
-//     errors = [],
-//     stack = ""
-// )
-
 import ApiResponse from '../utils/ApiResponse.js';  
-// constructor(
-//     stautsCode,
-//     data,
-//     message = 'Success'
-// )
 
 export const signup = async (req, res, next) => {
     const {name, email, password} = req.body;
@@ -97,6 +84,11 @@ export const signout = async (req, res, next) => {
     res.status(response.statusCode).json(response);
 };
 
+export const getUser = async (req, res, next) => {
+    const response = new ApiResponse(200, req.user, 'User fetched successfully');
+
+    res.status(response.statusCode).json(response);
+};
 
 export const changePassword = async (req, res, next) => {
     const {oldPassword, newPassword} = req.body;

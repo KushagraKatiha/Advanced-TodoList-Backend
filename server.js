@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import ApiError from "./utils/ApiError.js";
 import userRouter from "./routes/userRoutes.js";
+import todoRouter from "./routes/todoRouter.js";
 
 const server = express();
 
@@ -33,6 +34,7 @@ server.use(cookieParser());
 
 
 server.use("/", userRouter);
+server.use("/", todoRouter);
 
 server.use((err, req, res, next) => {
   if (err instanceof ApiError) {
